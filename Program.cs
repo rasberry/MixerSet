@@ -230,9 +230,9 @@ namespace MixerSet
 		{
 			switch(state)
 			{
-			case AudioSessionState.AudioSessionStateActive: return "Playing";
-			case AudioSessionState.AudioSessionStateExpired: return "Expired";
-			case AudioSessionState.AudioSessionStateInactive: return "Silent";
+			case AudioSessionState.Active: return "Playing";
+			case AudioSessionState.Expired: return "Expired";
+			case AudioSessionState.Inactive: return "Silent";
 			}
 			return "Unkown";
 		}

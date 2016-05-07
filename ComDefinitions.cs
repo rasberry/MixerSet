@@ -5,11 +5,11 @@ namespace MixerSet
 {
 	[ComImport]
 	[Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
-	internal class MMDeviceEnumerator
+	class MMDeviceEnumerator
 	{
 	}
 
-	internal enum EDataFlow
+	enum EDataFlow
 	{
 		eRender,
 		eCapture,
@@ -17,7 +17,7 @@ namespace MixerSet
 		EDataFlow_enum_count
 	}
 
-	internal enum ERole
+	enum ERole
 	{
 		eConsole,
 		eMultimedia,
@@ -52,7 +52,7 @@ namespace MixerSet
 		int NotImpl_GetSimpleAudioVolume();
 
 		[PreserveSig]
-		int GetSessionEnumerator(out IAudioSessionEnumerator SessionEnum);
+		int GetSessionEnumerator(out IAudioSessionEnumerator sessionEnum);
 
 		// the rest is not implemented
 	}
@@ -61,14 +61,14 @@ namespace MixerSet
 	interface IAudioSessionEnumerator
 	{
 		[PreserveSig]
-		int GetCount(out int SessionCount);
+		int GetCount(out int sessionCount);
 
 		[PreserveSig]
-		int GetSession(int SessionCount, out IAudioSessionControl2 Session);
+		int GetSession(int sessionCount, out IAudioSessionControl2 session);
 	}
 
 	[Guid("bfb7ff88-7239-4fc9-8fa2-07c950be9c6d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	public interface IAudioSessionControl2
+	interface IAudioSessionControl2
 	{
 		//== IAudioSessionControl
 
@@ -122,22 +122,22 @@ namespace MixerSet
 	interface ISimpleAudioVolume
 	{
 		[PreserveSig]
-		int SetMasterVolume(float fLevel, ref Guid EventContext);
+		int SetMasterVolume(float fLevel, ref Guid eventContext);
 
 		[PreserveSig]
 		int GetMasterVolume(out float pfLevel);
 
 		[PreserveSig]
-		int SetMute(bool bMute, ref Guid EventContext);
+		int SetMute(bool bMute, ref Guid eventContext);
 
 		[PreserveSig]
 		int GetMute(out bool pbMute);
 	}
 
-	public enum AudioSessionState
+	enum AudioSessionState
 	{
-		AudioSessionStateInactive = 0,
-		AudioSessionStateActive = 1,
-		AudioSessionStateExpired = 2
+		Inactive = 0,
+		Active = 1,
+		Expired = 2
 	}
 }
