@@ -10,11 +10,11 @@ namespace MixerSet
 		{
 			Console.WriteLine("Usage: "
 				+"\n" + nameof(MixerSet) + " (command) [options]"
-				+"\n Commands: "
-				+"\n    (l)ist                Lists apps in volume mixer"
-				+"\n    (r)eset [n]           Resets all volumes to 0 or n"
-				+"\n    (a)pp (appname) (n)   Sets appname volume to n"
-				+"\n    (m)ute (appname)      Mutes or un-mutes appname"
+				+"\n Commands:"
+				+"\n  (l)ist                   Lists apps in volume mixer"
+				+"\n  (r)eset [n]              Resets all volumes to 0 or n"
+				+"\n  (v)olume (appname) (n)   Sets appname volume to n"
+				+"\n  (m)ute (appname)         Mutes or un-mutes appname"
 			);
 		}
 
@@ -32,7 +32,7 @@ namespace MixerSet
 						ArgVol = 0;
 					}
 				}
-				else if (arg == "app" || arg == "a") {
+				else if (arg == "volume" || arg == "v") {
 					ArgAction = Commands.App;
 					if (++a >= args.Length || String.IsNullOrEmpty(args[a])) {
 						Console.Error.WriteLine("Error: missing or bad application name");
