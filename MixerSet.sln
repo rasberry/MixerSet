@@ -1,22 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixerSet", "MixerSet.csproj", "{37A332D5-0078-4248-97F2-07E1D0D21EDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixerSet", "src\MixerSet.csproj", "{3C49B2EE-5D64-47BD-A377-8D40897253DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{37A332D5-0078-4248-97F2-07E1D0D21EDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{37A332D5-0078-4248-97F2-07E1D0D21EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{37A332D5-0078-4248-97F2-07E1D0D21EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{37A332D5-0078-4248-97F2-07E1D0D21EDE}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C49B2EE-5D64-47BD-A377-8D40897253DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C49B2EE-5D64-47BD-A377-8D40897253DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C49B2EE-5D64-47BD-A377-8D40897253DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C49B2EE-5D64-47BD-A377-8D40897253DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
