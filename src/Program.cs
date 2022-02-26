@@ -1,26 +1,25 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Reflection;
-using System.Diagnostics;
-using System.IO;
+using System.Runtime.InteropServices;
+
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows")]
 
 namespace MixerSet
 {
-	class Program
+	public class Program
 	{
 		static void Main(string[] args)
 		{
-			if (args.Length < 1 || !ParseArgs(args)) {
-				Usage();
+			if (args.Length < 1 || !Options.ParseArgs(args)) {
+				Options.Usage();
 				return;
 			}
 
-			switch(ArgAction)
+			switch(Options.ArgAction)
 			{
 			case Commands.List: ActionList(); break;
-			case Commands.Reset: ActionReset(ArgVol); break;
-			case Commands.App: ActionApp(ArgAppName,ArgVol); break;
+			case Commands.Reset: ActionReset(Options.ArgVol); break;
+			case Commands.App: ActionApp(Options.ArgAppName,Options.ArgVol); break;
 			}
 		}
 
@@ -67,58 +66,6 @@ namespace MixerSet
 			}
 		}
 
-		static Commands ArgAction = Commands.None;
-		static float ArgVol = 0.0f;
-		static string ArgAppName = null;
-
-		enum Commands {
-			None
-			,List
-			,Reset
-			,App
-		}
-
-		static void Usage()
-		{
-			Console.WriteLine("Usage: "
-				+"\n" + nameof(MixerSet) + "(command) [options]"
-				+"\n Commands: "
-				+"\n    list                Lists apps in volume mixer"
-				+"\n    reset [n]           Resets all volumes to 0 or n"
-				+"\n    app (appname) (n)   Sets appname volume to n"
-			);
-		}
-
-		static bool ParseArgs(string[] args)
-		{
-			for(int a=0; a<args.Length; a++)
-			{
-				string arg = args[0];
-				if (arg == "list" || arg == "l") {
-					ArgAction = Commands.List;
-				} else if (arg == "reset" || arg == "r") {
-					ArgAction = Commands.Reset;
-					if (++a >= args.Length || !float.TryParse(args[a],out ArgVol)) {
-						ArgVol = 0;
-					}
-				} else if (arg == "app" || arg == "a") {
-					ArgAction = Commands.App;
-					if (++a >= args.Length || String.IsNullOrEmpty(args[a])) {
-						Console.Error.WriteLine("Error: missing or bad application name");
-						return false;
-					} else {
-						ArgAppName = args[a];
-					}
-					if (++a >= args.Length || !float.TryParse(args[a],out ArgVol)) {
-						Console.Error.WriteLine("Error: missing or bad volume parameter");
-						return false;
-					}
-				}
-
-			}
-			return true;
-		}
-
 		static Guid GetGuid(Type t)
 		{
 			var att = t.GetTypeInfo().GetCustomAttribute<GuidAttribute>();
@@ -132,8 +79,7 @@ namespace MixerSet
 				return null;
 			}
 
-			float level;
-			volume.GetMasterVolume(out level);
+			volume.GetMasterVolume(out float level);
 			return level * 100;
 		}
 
@@ -144,8 +90,7 @@ namespace MixerSet
 				return null;
 			}
 
-			bool mute;
-			volume.GetMute(out mute);
+			volume.GetMute(out bool mute);
 			return mute;
 		}
 
@@ -171,43 +116,27 @@ namespace MixerSet
 			volume.SetMute(mute, ref guid);
 		}
 
-		public struct ApplicationInfo
-		{
-			public string Name;
-			public AudioSessionState State;
-			public uint ProcId;
-			public string ProcName;
-		}
-
 		static IEnumerable<ApplicationInfo> EnumerateApplications()
 		{
 			// get the speakers (1st render + multimedia) device
 			IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
-			IMMDevice speakers;
-			deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out speakers);
+			deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
 			// activate the session manager. we need the enumerator
 			Guid IID_IAudioSessionManager2 = GetGuid(typeof(IAudioSessionManager2));
-			object o;
-			speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out o);
+			speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object o);
 			IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
 
 			// enumerate sessions for on this device
-			IAudioSessionEnumerator sessionEnumerator;
-			mgr.GetSessionEnumerator(out sessionEnumerator);
-			int count;
-			sessionEnumerator.GetCount(out count);
+			mgr.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
+			sessionEnumerator.GetCount(out int count);
 
 			for (int i = 0; i < count; i++)
 			{
-				IAudioSessionControl2 ctl;
-				sessionEnumerator.GetSession(i, out ctl);
-				string dn;
-				int errgdn = ctl.GetDisplayName(out dn);
-				uint procid;
-				int errgpi = ctl.GetProcessId(out procid);
-				AudioSessionState state;
-				ctl.GetState(out state);
+				sessionEnumerator.GetSession(i, out IAudioSessionControl2 ctl);
+				int errgdn = ctl.GetDisplayName(out string dn);
+				int errgpi = ctl.GetProcessId(out uint procid);
+				ctl.GetState(out AudioSessionState state);
 				bool isss = ctl.IsSystemSoundsSession() == 0;
 				string fn = isss ? "System" : Process.GetProcessById((int)procid).MainModule.FileName;
 				//Console.WriteLine("=> "+errgdn+"|"+errgpi+"|"+isss+"|"+AudioSessionStateToDisplay(state)+"|"+procid+"|"+dn+"|"+fn);
@@ -241,29 +170,23 @@ namespace MixerSet
 		{
 			// get the speakers (1st render + multimedia) device
 			IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
-			IMMDevice speakers;
-			deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out speakers);
+			deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
 			// activate the session manager. we need the enumerator
 			Guid IID_IAudioSessionManager2 = GetGuid(typeof(IAudioSessionManager2));
-			object o;
-			speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out o);
+			speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object o);
 			IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
 
 			// enumerate sessions for on this device
-			IAudioSessionEnumerator sessionEnumerator;
-			mgr.GetSessionEnumerator(out sessionEnumerator);
-			int count;
-			sessionEnumerator.GetCount(out count);
+			mgr.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
+			sessionEnumerator.GetCount(out int count);
 
 			// search for an audio session with the required process id
 			ISimpleAudioVolume volumeControl = null;
 			for (int i = 0; i < count; i++)
 			{
-				IAudioSessionControl2 ctl;
-				sessionEnumerator.GetSession(i, out ctl);
-				uint pid;
-				ctl.GetProcessId(out pid);
+				sessionEnumerator.GetSession(i, out IAudioSessionControl2 ctl);
+				ctl.GetProcessId(out uint pid);
 				if (processId == pid)
 				{
 					volumeControl = ctl as ISimpleAudioVolume;
