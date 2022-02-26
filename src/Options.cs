@@ -11,9 +11,10 @@ namespace MixerSet
 			Console.WriteLine("Usage: "
 				+"\n" + nameof(MixerSet) + " (command) [options]"
 				+"\n Commands: "
-				+"\n    list                Lists apps in volume mixer"
-				+"\n    reset [n]           Resets all volumes to 0 or n"
-				+"\n    app (appname) (n)   Sets appname volume to n"
+				+"\n    (l)ist                Lists apps in volume mixer"
+				+"\n    (r)eset [n]           Resets all volumes to 0 or n"
+				+"\n    (a)pp (appname) (n)   Sets appname volume to n"
+				+"\n    (m)ute (appname)      Mutes or un-mutes appname"
 			);
 		}
 
@@ -24,12 +25,14 @@ namespace MixerSet
 				string arg = args[0];
 				if (arg == "list" || arg == "l") {
 					ArgAction = Commands.List;
-				} else if (arg == "reset" || arg == "r") {
+				}
+				else if (arg == "reset" || arg == "r") {
 					ArgAction = Commands.Reset;
 					if (++a >= args.Length || !float.TryParse(args[a],out ArgVol)) {
 						ArgVol = 0;
 					}
-				} else if (arg == "app" || arg == "a") {
+				}
+				else if (arg == "app" || arg == "a") {
 					ArgAction = Commands.App;
 					if (++a >= args.Length || String.IsNullOrEmpty(args[a])) {
 						Console.Error.WriteLine("Error: missing or bad application name");
@@ -40,6 +43,15 @@ namespace MixerSet
 					if (++a >= args.Length || !float.TryParse(args[a],out ArgVol)) {
 						Console.Error.WriteLine("Error: missing or bad volume parameter");
 						return false;
+					}
+				}
+				else if (arg == "mute" || arg == "m") {
+					ArgAction = Commands.Mute;
+					if (++a >= args.Length || String.IsNullOrEmpty(args[a])) {
+						Console.Error.WriteLine("Error: missing or bad application name");
+						return false;
+					} else {
+						ArgAppName = args[a];
 					}
 				}
 			}

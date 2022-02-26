@@ -17,9 +17,10 @@ namespace MixerSet
 
 			switch(Options.ArgAction)
 			{
-			case Commands.List: ActionList(); break;
+			case Commands.List:  ActionList(); break;
 			case Commands.Reset: ActionReset(Options.ArgVol); break;
-			case Commands.App: ActionApp(Options.ArgAppName,Options.ArgVol); break;
+			case Commands.App:   ActionApp(Options.ArgAppName,Options.ArgVol); break;
+			case Commands.Mute:  ActionMute(Options.ArgAppName); break;
 			}
 		}
 
@@ -34,6 +35,7 @@ namespace MixerSet
 					+ "\nState: "+AudioSessionStateToDisplay(app.State)
 					+ "\t Mute: "+GetApplicationMute(app.ProcId)
 					+ "\t Vol: "+GetApplicationVolume(app.ProcId)
+					+ "\t ProcId: "+app.ProcId
 				);
 				index++;
 			}
@@ -64,6 +66,33 @@ namespace MixerSet
 				}
 				index++;
 			}
+		}
+
+		static void ActionMute(string name)
+		{
+			int index = 0;
+			foreach (ApplicationInfo app in EnumerateApplications())
+			{
+				string sindex = index.ToString();
+				string pname = Path.GetFileNameWithoutExtension(app.ProcName);
+				//Console.WriteLine(name+" == "+sindex+" ("+(name == sindex)+") "+name+" == "+pname+" ("+(0 == String.Compare(name,pname,true))+")");
+				if (name == sindex || 0 == String.Compare(name,pname,true))
+				{
+					var prev = GetApplicationMute(app.ProcId);
+					var next = !prev.GetValueOrDefault(false);
+					SetApplicationMute(app.ProcId,next);
+					Console.WriteLine(pname+" "+GetMuteDisplay(prev) +" -> "+GetMuteDisplay(next));
+					break;
+				}
+				index++;
+			}
+		}
+		static string GetMuteDisplay(bool? mute)
+		{
+			if (!mute.HasValue) {
+				return "Unknown";
+			}
+			return mute.Value ? "Muted" : "UnMuted";
 		}
 
 		static Guid GetGuid(Type t)
@@ -102,7 +131,7 @@ namespace MixerSet
 			}
 
 			Guid guid = Guid.Empty;
-			volume.SetMasterVolume(level / 100, ref guid);
+			volume.SetMasterVolume(level / 100f, ref guid);
 		}
 
 		static void SetApplicationMute(uint processId, bool mute)
@@ -136,9 +165,15 @@ namespace MixerSet
 				sessionEnumerator.GetSession(i, out IAudioSessionControl2 ctl);
 				int errgdn = ctl.GetDisplayName(out string dn);
 				int errgpi = ctl.GetProcessId(out uint procid);
-				ctl.GetState(out AudioSessionState state);
 				bool isss = ctl.IsSystemSoundsSession() == 0;
+
+				//trying to remove duplucate entries
+				if (!isss && errgpi == (int)AUDCLNT.S_NO_SINGLE_PROCESS) {
+					continue;
+				}
+
 				string fn = isss ? "System" : Process.GetProcessById((int)procid).MainModule.FileName;
+				ctl.GetState(out AudioSessionState state);
 				//Console.WriteLine("=> "+errgdn+"|"+errgpi+"|"+isss+"|"+AudioSessionStateToDisplay(state)+"|"+procid+"|"+dn+"|"+fn);
 
 				yield return new ApplicationInfo {
@@ -169,7 +204,7 @@ namespace MixerSet
 		static ISimpleAudioVolume GetVolumeObject(uint processId)
 		{
 			// get the speakers (1st render + multimedia) device
-			IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
+			IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
 			deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out IMMDevice speakers);
 
 			// activate the session manager. we need the enumerator

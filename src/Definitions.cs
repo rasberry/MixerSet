@@ -4,7 +4,8 @@ namespace MixerSet
 		None = 0,
 		List = 1,
 		Reset = 2,
-		App = 3
+		App = 3,
+		Mute = 4
 	}
 
 	struct ApplicationInfo

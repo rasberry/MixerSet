@@ -24,6 +24,11 @@ namespace MixerSet
 		ERole_enum_count
 	}
 
+	enum AUDCLNT : int
+	{
+		S_NO_SINGLE_PROCESS = 0x889000d
+	}
+
 	[Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 	interface IMMDeviceEnumerator
 	{
